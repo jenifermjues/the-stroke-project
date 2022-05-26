@@ -1,0 +1,1 @@
+# thestroke group assignment
