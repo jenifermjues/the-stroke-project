@@ -1,0 +1,215 @@
+---
+title: "Data Cleaning and Preprocessing  WQD7001"
+author: "JENIFER MAYANG JUES"
+date: '2022-05-19'
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+
+# Group members
+
+### 1.Moses Wong Cheng Qing (S2134986) 
+### 2.Radziah Zainuddin (S2156690) 
+### 3.Shalini Gunalan (S2147287) 
+### 4.Tham Foo Soon (s17090535) 
+### 5.Jenifer Mayang Jues (s2016572)
+
+# Introduction
+
+###     According to the World Health Organization (WHO) stroke is the 2nd leading cause of death globally, responsible for approximately 11% of total deaths. 
+This dataset is used to predict whether a patient is likely to get stroke based on the input parameters like gender, age, various diseases, and smoking status. 
+       The main objective of this analysis is to predict which patient will face higher chances of having stroke based on the selected input parameters.Early detection of stroke using prediction model can allow medical officers to provide immediate or efficient treatment that may minimize the long-term effects of a stroke and even prevent death. 
+
+## Initial Questions
+
+### 1. Which factors are important in predicting stroke? 
+### 2. Which is the best sampling method for imbalanced data? 
+### 3. Which is the best classification model (logistic regression, random forest, NN and SVC) for stroke prediction
+
+# Data Cleaning
+
+## Import libraries and read dataset
+
+```{r}
+library('dplyr')
+library("naniar")
+library("mice")
+library("ggplot2")
+df <-read.csv("healthcare-dataset-stroke-data.csv")
+head(df)
+```
+## Summary of Data
+#### View the structure of data
+
+```{r}
+glimpse(df)
+class(df)
+```
+**Class of age column is in double class(dbl) which indicates the age value is in decimal point**
+
+**Class of bmi column is in character and N/A indicates missing values**
+
+#### View column names
+
+```{r}
+names(df)
+```
+
+
+#### Check for duplicated data
+
+```{r}
+table(duplicated(df$id))
+```
+
+**there is no duplication of id**
+
+```{r}
+unique(df$gender)
+unique(df$age)
+unique(df$hypertension)
+unique(df$heart_disease)
+unique(df$ever_married)
+unique(df$work_type)
+unique(df$Residence_type)
+unique(df$avg_glucose_level)
+unique(df$bmi)
+unique(df$smoking_status)
+unique(df$stroke)
+```
+
+#### Check for missing data in each column
+
+##### Calculating total number of missing values
+
+```{r}
+sum(is.na(df))
+```
+
+**Currently,the data shows that there is no missing value in the dataset although we know bmi has missing value. This could be due to the data type is in character instead of numeric hence the function unable to detect the missing values**
+
+## Data Preprocessing 
+
+#### Change data type of age to integer
+
+```{r}
+df$age<-as.integer(df$age)
+class(df$age)
+```
+
+#### Change data type of bmi to numeric
+
+```{r}
+df$bmi<-as.numeric(df$bmi)
+glimpse(df)
+```
+
+**The 'N/A' in bmi column cannot be converted and becomes NA**
+
+#### Replacing N/A character with with a missing value
+
+```{r}
+df %>% replace_with_na(replace = list(bmi = "NA"))
+```
+
+#### drop data for age value is equal to zero, gender with 'other' and smoking_status with 'unknown'
+
+```{r}
+new_df<-df[!(df$age ==0|df$gender == "other"|df$smoking_status == "unknown"),]
+glimpse(new_df)
+```
+#### Rechecking missing values
+
+##### Total number of missing values
+
+```{r}
+sum(is.na(new_df))
+```
+#### Visualization of missing values
+
+```{r}
+vis_miss(new_df)
+```
+
+**Based on the above bar chart, we can deduce that bmi has more than 2% of missing values which is 3.95%**
+
+
+## Handling Missing Values
+
+**In this part, mice package will be used to impute the missing value on a variable by variable basis by specifying an imputation model per variable**
+
+#### Imputation of missing values
+
+```{r}
+library("mice")
+imputed_df<-mice(new_df, m = 5, maxit= 50, method ="pmm")
+```
+
+#### Check the mean value of bmi
+
+```{r}
+summary(new_df$bmi)
+```
+**The mean of bmi will be used as a reference to choose the best imputed dataset**
+
+#### Check imputed values
+
+```{r}
+imputed_df$imp$bmi
+```
+**From five of the imputed datasets, select one that best fit the data which is close to mean value of bmi**
+
+**In this case, imputed dataset number five is the best fit as it close to mean value of bmi**
+
+## Result of cleaned and processed data
+
+```{r}
+final_data = complete(imputed_df, 5)
+head(final_data)
+```
+
+## Save Data
+
+```{r}
+write.csv(final_data, "Clean_stroke_dataset.csv", row.names = FALSE)
+```
+
+## Feature Selection
+
+### Import library and load clean data
+
+```{r}
+library('caret')
+library('mlbench')
+library('randomForest')
+df <-read.csv("Clean_stroke_dataset.csv")
+head(df)
+str(df)
+```
+
+```{r}
+set.seed(100)
+
+ctrl <- rfeControl(functions = rfFuncs,
+                   method = "repeatedcv",
+                   repeats = 5,
+                   verbose = FALSE)
+Result <- rfe(x=df[,2:11], y= df$stroke,
+                 sizes = c(2:11),
+                 rfeControl = ctrl)
+
+print(Result)
+```
+
+```{r}
+plot(Result)
+```
+
+## Data Visualisation
+
+#### Barplot
+
+*stroke Vs Gender
+
