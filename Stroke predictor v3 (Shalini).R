@@ -2,6 +2,7 @@ library(shiny)
 library(shinythemes)
 library(randomForest)
 library(dplyr)
+library(RCurl)
 ui<-fluidPage(theme = shinytheme("sandstone"),
               navbarPage(
                 "Stroke Predictor Widget",
@@ -71,7 +72,8 @@ server<- function(input, output) {
     
     colnames(df) <- c('gender',	'age',	'hypertension',	'heart_disease',	'ever_married',	'work_type',	'Residence_type',	'avg_glucose_level',	'bmi',	'smoking_status')
     df <- mutate_all(df, function(x) as.numeric((x)))
-    classifier_RF<-readRDS("classifier_RF.rda")
+    fileurl <-"https://github.com/jenifermjues/the-stroke-project/blob/main/classifier_RF.rda?raw=true"
+    classifier_RF<-readRDS(gzcon(url(fileurl)))
     y_pred = reactive(predict(classifier_RF, newdata = df))
     if (as.numeric(y_pred())==1){
       result <- "Low"
