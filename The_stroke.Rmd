@@ -1,0 +1,346 @@
+---
+title: "The_stroke.ipynb"
+output: html_document
+---
+
+# Introduction
+
+*   Stroke or sometimes known as brain attack happens when when blood supply does not reach to the brain due to blockage or the blood vessels in the brain bursts.
+*   A stroke can cause lasting brain damage, long-term disability, or even death because it is an important but complex organ as it controls most of our body functions.
+*There are two types of stroke. Ischemic stroke is where the blood vessels are block by blood clot or any particles and hemorrhagic stroke in which artery in the brain ruptured.
+*   According to the World Health Organization (WHO) stroke is the 2nd leading cause of death globally, responsible for approximately 11% of total deaths. Early detection of stroke using prediction model can allow medical officers to provide immediate or efficient treatment that may minimize the long-term effects of a stroke and even prevent death. 
+*   A lot of factors contribute to the likelihood of someone getting a stroke such as age, gender, diseases that they have and smoking status.
+
+
+#Initial Questions
+
+1.   Which factors are important in predicting stroke? 
+2.   Which is the best sampling method for imbalanced data?
+3.   Which is the best classification model (logistic regression and random forest) for stroke prediction?
+
+#Objective
+To predict the probability of stroke on individuals based on their age, gender, hypertension, heart disease, marital status, occupation, residence type, glucose level, BMI and smoking status.
+
+# Data Preprocessing
+
+We are getting the dataset downloaded from Kaggle - Stroke Prediction Dataset.
+
+```{r}
+## Import libraries and read dataset
+
+library('dplyr')
+df <-read.csv("https://github.com/jenifermjues/thestroke/raw/main/healthcare-dataset-stroke-data.csv")
+head(df)
+```
+
+Removed 'id' field because it is not useful for this analysis.
+
+```{r}
+df <- subset( df, select = -id )
+```
+
+```{r}
+## Summary of Data
+#### View the structure of data
+glimpse(df)
+```
+
+
+
+*   *Class of age column is in double class
+(dbl) which indicates the age value is in decimal point*
+*   *Class of age column is in double class
+(dbl) which indicates the age value is in decimal point*
+
+
+```{r}
+#### View column names
+names(df)
+```
+
+Convert 'age' field into 'age groups' to smoothen the data and improves accuracy.
+
+```{r}
+df["age"] = cut(df$age, c(0, 10, 20, 30, 40, 50, 60,  70, 80, Inf), c("0-9", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70-79",  ">80"), include.lowest=TRUE)
+```
+
+Convert 'avg_glucose_level' into 3 levels ("Low", "Normal",  "Diabetes").
+
+```{r}
+df["avg_glucose_level"] = cut(df$avg_glucose_level, c(0, 80, 150, Inf), c("Low", "Normal",  "Diabetes"), include.lowest=TRUE)
+```
+
+```{r}
+#check how many missing values in bmi
+sum(df$bmi =="N/A")
+```
+
+```{r}
+#remove the row with missing bmi
+df$bmi<-replace(df$bmi, df$bmi =="N/A" , NA)
+df<-na.omit(df)
+```
+
+```{r}
+# Mutating column name "BMI" and then changing data type to factor
+df$bmi<-as.numeric(df$bmi)
+df["bmi"] = cut(df$bmi, c(0, 18.5, 25, 30, 40 ,Inf), c("Underweight", "Healthy",  "Overweight", "Obese", "Very Obese"), include.lowest=TRUE)
+```
+
+```{r}
+
+##### Calculating total number of missing value 
+sum(is.na(df))
+```
+
+## EDA
+Exploratory Data Analysis or EDA is being used for us to analyse the data at high level. With the help of EDA, we can understand and summarize the contents of data, identify any missing values, determine the quality of data and able to compare and contrast between one value and another.
+
+```{r}
+#Using RColorBrewer library to manage colours in R
+library(RColorBrewer)
+```
+
+```{r}
+#Plotting bar for each column
+for (i in names(df)){
+  barplot(table(df[i]), main = i, col = coul <- brewer.pal(5, "Set2") )
+}
+```
+
+```{r}
+#Showing values of gender, excluding "Other"
+df<- df[df$gender!="Other",]
+barplot(table(df["gender"]), main = "gender", col= brewer.pal(5, "Set2"))
+```
+
+```{r}
+#Changing value of stroke from 1 and 0 to "Yes" and "No"
+temp_df<-df
+temp_df$stroke[temp_df$stroke == 1] <- "Yes"
+temp_df$stroke[temp_df$stroke == 0] <- "No"
+
+#Plotting stroke values
+count <- table(temp_df$stroke)
+barplot(count, 
+        main="Stroke and Not Stroke", 
+        xlab="stroke", 
+        ylab="count", 
+        col= brewer.pal(5, "Set2"))
+```
+
+```{r}
+library(reshape2)
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+# Plotting percentage distribution of stroke by age group
+temp <-subset.data.frame(df, select = c(age, stroke)) %>% 
+  group_by(age, stroke) %>% 
+  summarize(n = n(), .groups = 'drop') %>% 
+  group_by(age) %>% 
+  summarize(percentage_stroke = round(sum(n[stroke==1]/sum(n)), digits=2), 
+            percentage_not_stroke = 1-percentage_stroke, .groups = 'drop') %>% 
+  arrange(desc(percentage_stroke)) %>% 
+  slice(1:9)
+melted_temp<-melt(temp, id = "age")
+
+ggplot(melted_temp, aes(x = age, y = value, fill = variable)) + 
+  geom_bar(position = "fill", 
+           stat = "identity", 
+           color = "black", 
+           width = 1) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.6)) + 
+  scale_y_continuous(labels = scales::percent) + 
+  geom_text(aes(label = paste0(value*100,"%")), 
+            position = position_stack(vjust = 0.6), size = 2) + 
+  ggtitle("Percentage Distribution of Stroke by Age Group") + 
+  xlab("Age Group") + 
+  ylab("Stroke (percentage)") 
+```
+
+```{r}
+#Show transposed data
+glimpse(df)
+```
+
+```{r}
+#Reformat values to numeric
+df$gender <- ifelse(df$gender=="Male", 0, 1)
+df$age<-as.numeric(df$age)
+df$ever_married<- ifelse(df$ever_married=="Yes", 1, 0)
+df$work_type<-as.numeric(as.factor(df$work_type))
+df$Residence_type<-as.numeric(as.factor(df$Residence_type))
+df$avg_glucose_level<-as.numeric(df$avg_glucose_level)
+df$bmi<-as.numeric(df$bmi)  
+df$smoking_status<- as.numeric(as.factor(df$smoking_status))
+```
+
+```{r}
+#Show transposed data
+glimpse(df)
+```
+
+## Feature Selection
+We are using feature selection to remove any redundant and irrelvant data as it can help the machine learning algorithm to train faster and improve learning frequency.
+
+```{r}
+#Showing the correlation matrix
+CorMat <- cor(df)
+CorMat
+```
+
+```{r}
+#corrplot is used corrplot as it helps us to detect any hidden patterns among variables
+library(corrplot)
+```
+
+```{r}
+#Plotting correlation matrix
+corrplot(CorMat)
+```
+
+Step-wise Regression Feature Selection
+
+```{r}
+base.mod <- lm(stroke ~ 1 , data= df)  # base intercept only model
+all.mod <- lm(stroke ~ ., data= df) # full model with all predictors
+stepMod <- step(base.mod, scope = list(lower = base.mod, upper = all.mod), direction = "both", trace = 0, steps = 1000)  # perform step-wise algorithm
+shortlistedVars <- names(unlist(stepMod[[1]])) # get the shortlisted variable.
+shortlistedVars <- shortlistedVars[!shortlistedVars %in% "(Intercept)"]  # remove intercept 
+print(shortlistedVars)
+```
+
+## Sampling Method
+We use sampling method because we would like to identify the true association or the relationship between risk factors and stroke. In this project, random sampling is chosen.
+
+```{r}
+#Using caret (stands for Classification And REgression Training) package to create predictive model 
+library(caret)
+```
+
+```{r}
+#ROSE - Random Over Sampling to handle imbalance classes
+library(ROSE)
+```
+
+```{r}
+#Create possibly balanced samples by random over-sampling using ovun.sample
+balanced_sample<-NULL
+tmp<-ovun.sample(stroke ~ ., data = df, method = "over", p = 0.5, seed = 5)$data
+balanced_sample<-rbind(balanced_sample, tmp)
+```
+
+```{r}
+#Create possibly balanced samples by random BOTH over- and under-sampling using ovun.sample
+balanced_sample<-NULL
+tmp<-ovun.sample(stroke ~ ., data = df, method = "both", p = 0.5, seed = 5)$data
+balanced_sample<-rbind(balanced_sample, tmp)
+```
+
+```{r}
+#Showing balanced sample
+glimpse(balanced_sample)
+summary(balanced_sample$stroke)
+```
+
+```{r}
+#Set partition for train and test data
+set.seed(123)
+training.samples <- balanced_sample$stroke %>% 
+  createDataPartition(p = 0.8, list = FALSE)
+train.data  <- balanced_sample[training.samples, ]
+test.data <- balanced_sample[-training.samples, ]
+```
+
+# Data Modeling
+
+## Logistic regression
+
+# Data Training
+Using the data to train or teach algorithm or machine learning model to predict the outcome. We have selected logistic regression as the model.
+
+```{r}
+# Logistics Regression
+model  <- glm(stroke ~. , data = train.data, family = binomial)
+summary(model)
+```
+
+# Data Prediction
+
+```{r}
+#Predicting probabilities
+probabilities <- model %>% predict(test.data, type = "response")
+head(probabilities)
+```
+
+# Evaluation
+
+```{r}
+summary(probabilities)
+```
+
+```{r}
+predicted.classes <- ifelse(probabilities > 0.5, "1", "0")
+```
+
+```{r}
+mean(predicted.classes == test.data$stroke)
+```
+
+Random forest
+
+```{r}
+#Using randomForest for the evaluation
+library(randomForest)
+```
+
+```{r}
+train.data$stroke<-as.character(train.data$stroke) #converting numeric train data to character
+train.data$stroke<-as.factor(train.data$stroke) #converting numeric train data to factor
+```
+
+```{r}
+classifier_RF = randomForest(x = train.data[-11],
+                             y = train.data$stroke,
+                             ntree = 500,
+                             importance=TRUE)
+  
+classifier_RF
+```
+
+```{r}
+#Save the object to a file
+saveRDS(classifier_RF, file="classifier_RF.rda")
+```
+
+```{r}
+#Restore the object
+classifier_RF<-readRDS("classifier_RF.rda")
+```
+
+```{r}
+y_pred = predict(classifier_RF, newdata = df[1,-11])
+```
+
+```{r}
+y_pred = predict(classifier_RF, newdata = test.data[-11])
+# Confusion Matrix
+confusion_mtx = table(test.data[, 11], y_pred)
+confusionMatrix(confusion_mtx)
+  
+# Plotting model
+plot(classifier_RF)
+  
+# Importance plot
+importance(classifier_RF)
+  
+# Variable importance plot
+varImpPlot(classifier_RF)
+```
+
+
+
+
