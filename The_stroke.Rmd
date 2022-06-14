@@ -167,6 +167,22 @@ glimpse(df)
 ```
 
 ```{r}
+df$gender<-as.factor(df$gender)
+df$hypertension <-as.factor(df$hypertension)
+df$heart_disease<-as.factor(df$heart_disease)
+df$ever_married <-as.factor(df$ever_married)
+df$work_type<-as.factor(df$work_type)
+df$Residence_type<-as.factor(df$Residence_type)
+df$work_type<-as.factor(df$work_type)
+df$smoking_status <-as.factor(df$smoking_status)
+df$stroke<-as.factor(df$stroke)
+```
+
+```{r}
+glimpse(df)
+```
+
+```{r}
 #Reformat values to numeric
 df$gender <- ifelse(df$gender=="Male", 0, 1)
 df$age<-as.numeric(df$age)
@@ -187,9 +203,12 @@ glimpse(df)
 We are using feature selection to remove any redundant and irrelvant data as it can help the machine learning algorithm to train faster and improve learning frequency.
 
 ```{r}
-#Showing the correlation matrix
-CorMat <- cor(df)
-CorMat
+library(polycor)
+```
+
+```{r}
+CorMat <- hetcor(df)
+CorMat$correlations
 ```
 
 ```{r}
@@ -199,18 +218,7 @@ library(corrplot)
 
 ```{r}
 #Plotting correlation matrix
-corrplot(CorMat)
-```
-
-Step-wise Regression Feature Selection
-
-```{r}
-base.mod <- lm(stroke ~ 1 , data= df)  # base intercept only model
-all.mod <- lm(stroke ~ ., data= df) # full model with all predictors
-stepMod <- step(base.mod, scope = list(lower = base.mod, upper = all.mod), direction = "both", trace = 0, steps = 1000)  # perform step-wise algorithm
-shortlistedVars <- names(unlist(stepMod[[1]])) # get the shortlisted variable.
-shortlistedVars <- shortlistedVars[!shortlistedVars %in% "(Intercept)"]  # remove intercept 
-print(shortlistedVars)
+corrplot(CorMat$correlations)
 ```
 
 ## Sampling Method
@@ -340,7 +348,4 @@ importance(classifier_RF)
 # Variable importance plot
 varImpPlot(classifier_RF)
 ```
-
-
-
 
