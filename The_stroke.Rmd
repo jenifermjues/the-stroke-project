@@ -12,13 +12,13 @@ output: html_document
 *   A lot of factors contribute to the likelihood of someone getting a stroke such as age, gender, diseases that they have and smoking status.
 
 
-#Initial Questions
+# Initial Questions
 
 1.   Which factors are important in predicting stroke? 
 2.   Which is the best sampling method for imbalanced data?
 3.   Which is the best classification model (logistic regression and random forest) for stroke prediction?
 
-#Objective
+# Objective
 To predict the probability of stroke on individuals based on their age, gender, hypertension, heart disease, marital status, occupation, residence type, glucose level, BMI and smoking status.
 
 # Data Preprocessing
