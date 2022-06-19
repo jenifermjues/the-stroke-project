@@ -1,0 +1,60 @@
+---
+title: "Predictive Analysis on Stroke Patient"
+subtitle: "The Stroke Predictor Tool"
+author: "Jenifer Mayang Jues (S2016572) - Team Leader, Moses Wong Cheng Qing (S2134986), Shalini Gunalan (S2147287), Tham Foo Soon (17090535), Radziah Zainuddin (S2156690)" 
+output: 
+  slidy_presentation:
+      footer: "By: Group 10 (The Stroke)"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Problem Statement and Questions {.smaller}
+
+::: {width="40%" style="background-color: powderblue;"}
+**Problem**
+
+According to the World Health Organization (WHO) stroke is the 2nd leading cause of death globally, responsible for approximately 11% of total deaths. Early detection of stroke using prediction model can allow medical officers to provide immediate or efficient treatment that may minimize the long-term effects of a stroke and even prevent death.
+:::
+
+::: {.column width="40%" style="background-color: LemonChiffon;"}
+**Questions**
+
+1.  Which factors are important in predicting stroke?
+2.  Which is the best sampling method for imbalanced data?
+3.  Which is the best classification model (logistic regression or random forest) for stroke prediction?
+:::
+
+# Methodology (CRISP-DM) {.smaller}
+
+![](crisp-dm.png){width="900"}
+
+# Data Story and Visualization {.smaller}
+
+## Data Story {.smaller}
+
+Based on the confusion matrix and EDA we did, we identify that age group is a important variable in predicting probability of getting stroke in the future. This was also confirmed by the variable importance plot of our random forest model. Hence, elders are recommended to do yearly check up for early detection of stroke.
+
+## Visualization {.smaller}
+
+![](project%20viz.png){width="1200"}
+
+# Application {.smaller}
+
+## Code {.smaller}
+
+Reproducibility:
+
+-   Codes and data are published publicly in github - [The Stroke Github](https://github.com/jenifermjues/the-stroke-project) *(right click)*
+
+-   Stroke prediction app is published on rpubs.
+
+-   The dataset used are publicly available.
+
+## Shiny Apps {.smaller}
+
+Click on the image to direct you to the apps.
+
+[![](images/WhatsApp%20Image%202022-06-13%20at%2011.22.44%20PM.jpeg){style="class" width="500"}](https://qbay9j-foo0soon-tham.shinyapps.io/The_Stroke_Project/)
