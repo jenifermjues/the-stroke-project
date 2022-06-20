@@ -1,10 +1,14 @@
 ---
+.title-slide {
+  background-color: #CBE7A5;
+  
 title: "Predictive Analysis on Stroke Patient"
-subtitle: "The Stroke Predictor Tool"
+subtitle: "Group 10 - The Stroke"
 author: "Jenifer Mayang Jues (S2016572) - Team Leader, Moses Wong Cheng Qing (S2134986), Shalini Gunalan (S2147287), Tham Foo Soon (17090535), Radziah Zainuddin (S2156690)" 
 output: 
   slidy_presentation:
       footer: "By: Group 10 (The Stroke)"
+}
 ---
 
 ```{r setup, include=FALSE}
@@ -29,7 +33,7 @@ According to the World Health Organization (WHO) stroke is the 2nd leading cause
 
 # Methodology (CRISP-DM) {.smaller}
 
-![](crisp-dm.png){width="900"}
+![](crisp-dm.png){width="1300"}
 
 # Data Story and Visualization {.smaller}
 
@@ -39,7 +43,7 @@ Based on the confusion matrix and EDA we did, we identify that age group is a im
 
 ## Visualization {.smaller}
 
-![](project%20viz.png){width="1200"}
+![](project%20viz.png){width="1300"}
 
 # Application {.smaller}
 
