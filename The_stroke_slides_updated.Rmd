@@ -1,14 +1,11 @@
 ---
-.title-slide {
-  background-color: #CBE7A5;
-  
 title: "Predictive Analysis on Stroke Patient"
 subtitle: "Group 10 - The Stroke"
 author: "Jenifer Mayang Jues (S2016572) - Team Leader, Moses Wong Cheng Qing (S2134986), Shalini Gunalan (S2147287), Tham Foo Soon (17090535), Radziah Zainuddin (S2156690)" 
+framework: io2012
 output: 
   slidy_presentation:
       footer: "By: Group 10 (The Stroke)"
-}
 ---
 
 ```{r setup, include=FALSE}
@@ -62,3 +59,15 @@ Reproducibility:
 Click on the image to direct you to the apps.
 
 [![](images/WhatsApp%20Image%202022-06-13%20at%2011.22.44%20PM.jpeg){style="class" width="500"}](https://qbay9j-foo0soon-tham.shinyapps.io/The_Stroke_Project/)
+
+# Discussion
+
+## Discuss the current issues and challenges facing Data Science today {.smaller}
+
+-   Insufficient understanding between the business problems. This has caused the data science processes to go to waste and cost a business a lot of money. 
+
+-   Identifying correct data sources that could come from multiple platforms to address data science questions. The integration and pre-processing of each data consumes a lot of time and effort. 
+
+-   Due to data explosion, companies are collecting vast amounts of data and are not able to analyze the data in real time causing a knowledge gap. As the amount of data available increased, the percentage of data that organizations can process decreased. Thus, creating a blind zone - an uncertainty concerning the value of all captured and yet unexplored data. 
+
+-   Talent shortage is another issue in data science facing by most of the business. Businesses often struggle to find the right data team with in-depth knowledge and domain expertise.
